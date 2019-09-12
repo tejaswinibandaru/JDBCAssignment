@@ -89,6 +89,13 @@ public class AuthorDaoImpl implements AuthorDao {
 	@Override
 	public Integer removeAuthor(BigInteger authorId) throws AuthorException {
 		// TODO Auto-generated method stub
+		String sql="delete from author where author_id=?";
+		try {
+			preparedStatement=connection.prepareStatement(sql);
+			
+		}catch (Exception e) {
+			// TODO: handle exception
+		}
 		return null;
 	}
 

@@ -18,7 +18,7 @@ public class DBUtil {
     static{
   	
   	  Properties props = System.getProperties();
-  	  String userDir= props.getProperty("user.dir")+"/src/main/resources/";
+  	  String userDir= props.getProperty("user.dir")+"JdbcAssignment/src/main/resources/";
   	  System.out.println("Current working directory is " +userDir);
   	  PropertyConfigurator.configure(userDir+"log4j.properties");
 		myLogger=Logger.getLogger("DBUtil.class");
@@ -55,7 +55,7 @@ public class DBUtil {
    //method for loading property file 
     private static Properties loadProp() throws AuthorException {
   	  Properties props = System.getProperties();
-  	  String userDir= props.getProperty("user.dir")+"/src/main/resources/";
+  	  String userDir= props.getProperty("user.dir")+"JdbcAssignment/src/main/resources/";
   	  Properties myProp=new Properties();
 		try (FileInputStream fis=new FileInputStream(userDir+"jdbc.properties"))	{  			
 			myProp.load(fis);

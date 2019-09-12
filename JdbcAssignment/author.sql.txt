@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS author
+    -> (
+    -> author_id BIGINT AUTO_INCREMENT,
+    -> first_name VARCHAR(30) NOT NULL,
+    -> middle_name VARCHAR(30),
+    -> last_name VARCHAR(30),
+    -> phone_no VARCHAR(30),
+    -> CONSTRAINT pk_author PRIMARY KEY(author_id));

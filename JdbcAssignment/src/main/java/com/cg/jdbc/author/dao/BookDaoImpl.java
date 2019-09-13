@@ -223,7 +223,7 @@ public class BookDaoImpl implements BookDao {
 		List<Book> books=listAllBooks();
 		Book bookObj=new Book();
 		for(Book book:books) {
-			if(book.getBookISBN().equals(bookId)) {
+			if(book.getBookName().equals(name)) {
 				bookObj=book;
 			}
 		}

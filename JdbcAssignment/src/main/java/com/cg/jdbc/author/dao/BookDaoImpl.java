@@ -13,12 +13,13 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
-import com.cg.jdbc.author.exception.AuthorException;
+import com.cg.jdbc.author.exception.BookException;
 import com.cg.jdbc.author.model.Author;
+import com.cg.jdbc.author.model.Book;
 import com.cg.jdbc.author.util.DBUtil;
 
-public class AuthorDaoImpl implements AuthorDao {
-
+public class BookDaoImpl implements BookDao {
+	
 	private static Connection connection;
 	private PreparedStatement preparedStatement;
 	private ResultSet resultSet;
@@ -29,7 +30,7 @@ public class AuthorDaoImpl implements AuthorDao {
 		String userDir= properties.getProperty("user.dir")+"\\src\\main\\resources\\";
 		System.out.println("Current working directory: "+userDir);
 		PropertyConfigurator.configure(userDir+"log4j.properties");
-		logger=Logger.getLogger("AuthorDaoImpl.class");
+		logger=Logger.getLogger("BookDaoImpl.class");
 	}
 	
 	static {
@@ -41,32 +42,31 @@ public class AuthorDaoImpl implements AuthorDao {
 			logger.error("Connection unable to estalish: "+e.getMessage());
 		}
 	}
-	
+
 	@Override
-	public Author addAuthor(Author author) throws AuthorException {
+	public Book addBook(Book book) throws BookException {
 		// TODO Auto-generated method stub
-		String sql="insert into author(first_name,middle_name,last_name,phone_no) values(?,?,?,?)";
+		String sql="insert into book(book_name,book_price,author_id) values(?,?,?)";
 		try {
 			preparedStatement=connection.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);
 			
-			preparedStatement.setString(1, author.getFirstName());
-			preparedStatement.setString(2, author.getMiddleName());
-			preparedStatement.setString(3, author.getLastName());
-			preparedStatement.setString(4, author.getPhoneNo());
+			preparedStatement.setBigDecimal(2, book.getBookPrice());
+			preparedStatement.setString(1, book.getBookName());
+			preparedStatement.setLong(3, book.getAuthorId().longValue());
 			
 			int recordsCount=preparedStatement.executeUpdate();
 			logger.info(recordsCount+" rows inserted");
 			
-			BigInteger generatedId=BigInteger.valueOf(1000L);
+			BigInteger generatedId=BigInteger.valueOf(0L);
 			resultSet=preparedStatement.getGeneratedKeys();
 			
 			if(resultSet.next()) {
-				generatedId=BigInteger.valueOf(resultSet.getLong(1));
+				generatedId=BigInteger.valueOf(resultSet.getLong(1001));
 				logger.info("Auto generated id: "+generatedId);
 			}
 		}catch (SQLException e) {
 			// TODO: handle exception
-			logger.error("Error generated at addAuthor method in AuthorDao: "+e.getMessage());
+			logger.error("Error generated at addBook method in BookDao: "+e.getMessage());
 		}
 		finally {
 			if(preparedStatement!=null) {
@@ -74,35 +74,35 @@ public class AuthorDaoImpl implements AuthorDao {
 					preparedStatement.close();
 				}catch (SQLException e) {
 					// TODO: handle exception
-					logger.error("Error generated at addAuthor method in AuthorDao: "+e.getMessage());
+					logger.error("Error generated at addBook method in BookDao: "+e.getMessage());
 				}
 			}
 		}
-		return author;
+		return book;
 	}
 
 	@Override
-	public List<Author> listAllAuthors() throws AuthorException {
+	public List<Book> listAllBooks() throws BookException {
 		// TODO Auto-generated method stub
-		String sql="select * from author";
-		List<Author> authorsList=new ArrayList<Author>();
+		String sql="select * from book";
+		List<Book> booksList=new ArrayList<Book>();
 		try {
 			preparedStatement=connection.prepareStatement(sql);
 			resultSet=preparedStatement.executeQuery();
 			
 			while(resultSet.next()){
-				Author author=new Author();
-				author.setAuthorId(BigInteger.valueOf(resultSet.getLong("author_id")));
-				author.setFirstName(resultSet.getString("first_name"));
-				author.setMiddleName(resultSet.getString("middle_name"));
-				author.setLastName(resultSet.getString("last_name"));
-				author.setPhoneNo(resultSet.getString("phone_no"));
+				Book book=new Book();
+	
+				book.setBookISBN(BigInteger.valueOf(resultSet.getLong("book_isbn")));
+				book.setBookName(resultSet.getString("book_name"));
+				book.setBookPrice(resultSet.getBigDecimal("book_price"));
+				book.setAuthorId(BigInteger.valueOf(resultSet.getLong("author_id")));
 				
-				authorsList.add(author);
+				booksList.add(book);
 			}
 		}catch (Exception e) {
 			// TODO: handle exception
-			logger.error("Error generated at listAllAuthors method in AuthorDao: "+e.getMessage());
+			logger.error("Error generated at listAllBooks method in BookDao: "+e.getMessage());
 		}
 		finally {
 			if(preparedStatement!=null) {
@@ -110,27 +110,27 @@ public class AuthorDaoImpl implements AuthorDao {
 					preparedStatement.close();
 				}catch (SQLException e) {
 					// TODO: handle exception
-					logger.error("Error generated at addAuthor method in AuthorDao: "+e.getMessage());
+					logger.error("Error generated at listAllBooks method in BookDao: "+e.getMessage());
 				}
 			}
 		}
-		return authorsList;
+		return booksList;
 	}
 
 	@Override
-	public Integer removeAuthor(BigInteger authorId) throws AuthorException {
+	public Integer removeBook(BigInteger bookId) throws BookException {
 		// TODO Auto-generated method stub
-		String sql="delete from author where author_id=?";
+		String sql="delete from book where book_isbn=?";
 		try {
 			preparedStatement=connection.prepareStatement(sql);
-			preparedStatement.setLong(1, authorId.longValue());
+			preparedStatement.setLong(1, bookId.longValue());
 			
 			int recordsCount=preparedStatement.executeUpdate();
 			logger.info(recordsCount+" rows deleted");
 			
 		}catch (Exception e) {
 			// TODO: handle exception
-			logger.error("Error generated at deleteAuthor method in AuthorDao: "+e.getMessage());
+			logger.error("Error generated at deleteBook method in BookDao: "+e.getMessage());
 		}
 		finally {
 			if(preparedStatement!=null) {
@@ -138,29 +138,30 @@ public class AuthorDaoImpl implements AuthorDao {
 					preparedStatement.close();
 				}catch (SQLException e) {
 					// TODO: handle exception
-					logger.error("Error generated at addAuthor method in AuthorDao: "+e.getMessage());
+					logger.error("Error generated at deleteBook method in AuthorDao: "+e.getMessage());
 				}
 			}
 		}
 		return 1;
+
 	}
 
 	@Override
-	public Author updateAuthor(BigInteger authorId) throws AuthorException {
-		
-		List<Author> authors=listAllAuthors();
-		Author authorObj=new Author();
-		for(Author author:authors) {
-			if(author.getAuthorId().equals(authorId)) {
-				authorObj=author;
+	public Book updateBook(BigInteger bookId) throws BookException {
+		// TODO Auto-generated method stub
+		List<Book> books=listAllBooks();
+		Book bookObj=new Book();
+		for(Book book:books) {
+			if(book.getBookISBN().equals(bookId)) {
+				bookObj=book;
 			}
 		}
 		
-		String sql="update author set phone_no=? where author_id=?";
+		String sql="update book set book_price=? where book_isbn=?";
 		try {
 			preparedStatement=connection.prepareStatement(sql);
-			preparedStatement.setLong(2, authorId.longValue());
-			preparedStatement.setString(1, authorObj.getPhoneNo());
+			preparedStatement.setBigDecimal(1, bookObj.getBookPrice());
+			preparedStatement.setLong(2, bookObj.getBookISBN().longValue());
 			
 			int recordsCount=preparedStatement.executeUpdate();
 			logger.info(recordsCount+" rows updated"); 
@@ -179,29 +180,28 @@ public class AuthorDaoImpl implements AuthorDao {
 			}
 		}
 		// TODO Auto-generated method stub
-		return authorObj;
+		return bookObj;
 	}
 
 	@Override
-	public List<Author> searchAuthor(BigInteger authorId) throws AuthorException {
+	public List<Book> searchBook(BigInteger bookId) throws BookException {
 		// TODO Auto-generated method stub
-		String sql="select * from author where author_id=?";
-		List<Author> authors=new ArrayList<Author>();
+		String sql="select * from book where book_isbn=?";
+		List<Book> books=new ArrayList<Book>();
 		
 		try {
 			preparedStatement=connection.prepareStatement(sql);
-			preparedStatement.setLong(1, authorId.longValue());
+			preparedStatement.setLong(1, bookId.longValue());
 			resultSet=preparedStatement.executeQuery();
 			
 			while(resultSet.next()) {
-				Author author=new Author();
-				author.setAuthorId(BigInteger.valueOf(resultSet.getLong("author_id")));
-				author.setFirstName(resultSet.getString("first_name"));
-				author.setMiddleName(resultSet.getString("middle_name"));
-				author.setLastName(resultSet.getString("last_name"));
-				author.setPhoneNo(resultSet.getString("phone_no"));
+				Book book=new Book();
+				book.setBookISBN(BigInteger.valueOf(resultSet.getLong("book_isbn")));
+				book.setBookName(resultSet.getString("book_name"));
+				book.setBookPrice(resultSet.getBigDecimal("book_price"));
+				book.setAuthorId(BigInteger.valueOf(resultSet.getLong("author_id")));
 				
-				authors.add(author);
+				books.add(book);
 			}
 		}catch (Exception e) {
 			// TODO: handle exception
@@ -216,7 +216,24 @@ public class AuthorDaoImpl implements AuthorDao {
 				}
 			}
 		}
-		return authors;
+		return books;
+	}
+	
+	public Book updateByName(String name) throws BookException{
+		List<Book> books=listAllBooks();
+		Book bookObj=new Book();
+		for(Book book:books) {
+			if(book.getBookISBN().equals(bookId)) {
+				bookObj=book;
+			}
+		}
+		String sql="update book join author on book.author_id=author.author_id set book_price=500.0 where first_name=?";
+		try {
+			
+		}catch (Exception e) {
+			// TODO: handle exception
+		}
+		return null;
 	}
 
 }

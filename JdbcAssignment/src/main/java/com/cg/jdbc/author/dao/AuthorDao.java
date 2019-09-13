@@ -11,5 +11,5 @@ public interface AuthorDao {
 	public List<Author> listAllAuthors() throws AuthorException;
 	public Integer removeAuthor(BigInteger authorId) throws AuthorException;
 	public Author updateAuthor(BigInteger authorId) throws AuthorException;
-	public Author searchAuthor(BigInteger authorId) throws AuthorException;
+	public List<Author> searchAuthor(BigInteger authorId) throws AuthorException;
 }

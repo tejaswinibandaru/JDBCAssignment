@@ -1,5 +1,6 @@
 package com.cg.jdbc.author.dao;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -13,6 +14,7 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
+import com.cg.jdbc.author.exception.AuthorException;
 import com.cg.jdbc.author.exception.BookException;
 import com.cg.jdbc.author.model.Author;
 import com.cg.jdbc.author.model.Book;
@@ -138,7 +140,7 @@ public class BookDaoImpl implements BookDao {
 					preparedStatement.close();
 				}catch (SQLException e) {
 					// TODO: handle exception
-					logger.error("Error generated at deleteBook method in AuthorDao: "+e.getMessage());
+					logger.error("Error generated at deleteBook method in BookDao: "+e.getMessage());
 				}
 			}
 		}
@@ -167,7 +169,7 @@ public class BookDaoImpl implements BookDao {
 			logger.info(recordsCount+" rows updated"); 
 		}catch (Exception e) {
 			// TODO: handle exception
-			logger.error("Error generated at updateAuthor method in AuthorDao: "+e.getMessage());
+			logger.error("Error generated at updateBook method in BookDao: "+e.getMessage());
 		}
 		finally {
 			if(preparedStatement!=null) {
@@ -175,7 +177,7 @@ public class BookDaoImpl implements BookDao {
 					preparedStatement.close();
 				}catch (SQLException e) {
 					// TODO: handle exception
-					logger.error("Error generated at addAuthor method in AuthorDao: "+e.getMessage());
+					logger.error("Error generated at updateBook method in BookDao: "+e.getMessage());
 				}
 			}
 		}
@@ -205,35 +207,78 @@ public class BookDaoImpl implements BookDao {
 			}
 		}catch (Exception e) {
 			// TODO: handle exception
-			logger.error("Error generated at searchAuthor method in AuthorDao: "+e.getMessage());
+			logger.error("Error generated at searchBook method in BookDao: "+e.getMessage());
 		}finally {
 			if(preparedStatement!=null) {
 				try {
 					preparedStatement.close();
 				}catch (SQLException e) {
 					// TODO: handle exception
-					logger.error("Error generated at addAuthor method in AuthorDao: "+e.getMessage());
+					logger.error("Error generated at searchBook method in BookDao: "+e.getMessage());
 				}
 			}
 		}
 		return books;
 	}
 	
-	public Book updateByName(String name) throws BookException{
-		List<Book> books=listAllBooks();
-		Book bookObj=new Book();
-		for(Book book:books) {
-			if(book.getBookName().equals(name)) {
-				bookObj=book;
-			}
-		}
-		String sql="update book join author on book.author_id=author.author_id set book_price=500.0 where first_name=?";
+	public Integer updateByName(BigDecimal price,String name) throws BookException{
+		int recordsCount=0;
+		String sql="update book join author on book.author_id=author.author_id set book_price=? where first_name=?";
 		try {
+			preparedStatement=connection.prepareStatement(sql);
+			preparedStatement.setBigDecimal(1, price);
+			preparedStatement.setString(2, name);
 			
+			recordsCount=preparedStatement.executeUpdate();
+			logger.info(recordsCount+" rows updated");
 		}catch (Exception e) {
 			// TODO: handle exception
+			logger.error("Error generated at updateByName method in BookDao: "+e.getMessage());
+		}finally {
+			if(preparedStatement!=null) {
+				try {
+					preparedStatement.close();
+				}catch (SQLException e) {
+					// TODO: handle exception
+					logger.error("Error generated at searchBook method in BookDao: "+e.getMessage());
+				}
+			}
 		}
-		return null;
+		return recordsCount;
+	}
+	
+	public List<Book> viewBookByAuthor(BigInteger authorId) throws AuthorException{
+		String sql="select book_name from book where author_id=?";
+		List<Book> books=new ArrayList<Book>();
+		
+		try {
+			preparedStatement=connection.prepareStatement(sql);
+			preparedStatement.setLong(1,authorId.longValue());
+			
+			resultSet=preparedStatement.executeQuery();
+			while(resultSet.next()) {
+				Book book=new Book();
+				book.setBookISBN(BigInteger.valueOf(resultSet.getLong("book_isbn")));
+				book.setBookName(resultSet.getString("book_name"));
+				book.setBookPrice(resultSet.getBigDecimal("book_price"));
+				book.setAuthorId(BigInteger.valueOf(resultSet.getLong("author_id")));
+				
+				books.add(book);
+			}
+		}catch (Exception e) {
+			// TODO: handle exception
+			logger.error("Error generated at viewBookByAuthor method in BookDao: "+e.getMessage());
+		}finally {
+			if(preparedStatement!=null) {
+				try {
+					preparedStatement.close();
+				}catch (SQLException e) {
+					// TODO: handle exception
+					logger.error("Error generated at viewBookByAuthor method in BookDao: "+e.getMessage());
+				}
+			}
+		}
+		return books;
 	}
 
 }

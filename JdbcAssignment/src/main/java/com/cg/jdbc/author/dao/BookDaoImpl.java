@@ -1,5 +1,6 @@
 package com.cg.jdbc.author.dao;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -219,17 +220,12 @@ public class BookDaoImpl implements BookDao {
 		return books;
 	}
 	
-	public Book updateByName(String name) throws BookException{
-		List<Book> books=listAllBooks();
-		Book bookObj=new Book();
-		for(Book book:books) {
-			if(book.getBookName().equals(name)) {
-				bookObj=book;
-			}
-		}
-		String sql="update book join author on book.author_id=author.author_id set book_price=500.0 where first_name=?";
+	public List<Book> updateByName(double price,String name) throws BookException{
+		String sql="update book join author on book.author_id=author.author_id set book_price=? where first_name=?";
 		try {
-			
+			preparedStatement=connection.prepareStatement(sql);
+//			preparedStatement.setBigDecimal(1);
+			preparedStatement.setString(2,name);
 		}catch (Exception e) {
 			// TODO: handle exception
 		}

@@ -167,7 +167,7 @@ public class BookDaoImpl implements BookDao {
 			logger.info(recordsCount+" rows updated"); 
 		}catch (Exception e) {
 			// TODO: handle exception
-			logger.error("Error generated at updateAuthor method in AuthorDao: "+e.getMessage());
+			logger.error("Error generated at updateBook method in BookDao: "+e.getMessage());
 		}
 		finally {
 			if(preparedStatement!=null) {
@@ -175,7 +175,7 @@ public class BookDaoImpl implements BookDao {
 					preparedStatement.close();
 				}catch (SQLException e) {
 					// TODO: handle exception
-					logger.error("Error generated at addAuthor method in AuthorDao: "+e.getMessage());
+					logger.error("Error generated at updateBook method in BookDao: "+e.getMessage());
 				}
 			}
 		}
@@ -205,35 +205,86 @@ public class BookDaoImpl implements BookDao {
 			}
 		}catch (Exception e) {
 			// TODO: handle exception
-			logger.error("Error generated at searchAuthor method in AuthorDao: "+e.getMessage());
+			logger.error("Error generated at searchBook method in AuthorDao: "+e.getMessage());
 		}finally {
 			if(preparedStatement!=null) {
 				try {
 					preparedStatement.close();
 				}catch (SQLException e) {
 					// TODO: handle exception
-					logger.error("Error generated at addAuthor method in AuthorDao: "+e.getMessage());
+					logger.error("Error generated at searchBook method in BookDao: "+e.getMessage());
 				}
 			}
 		}
 		return books;
 	}
 	
-	public Book updateByName(String name) throws BookException{
-		List<Book> books=listAllBooks();
-		Book bookObj=new Book();
-		for(Book book:books) {
-			if(book.getBookName().equals(name)) {
-				bookObj=book;
-			}
-		}
-		String sql="update book join author on book.author_id=author.author_id set book_price=500.0 where first_name=?";
+	public List<Book> updateByName(String name) throws BookException{
+		List<Book> books = null;
+		String sql="update book join author on book.author_id=author.author_id set book_price=500.0 where author.first_name=?";
 		try {
+			preparedStatement=connection.prepareStatement(sql);
 			
+			preparedStatement.setString(1, name);
+			int recordsCount=preparedStatement.executeUpdate();
+			
+			sql="select * from book join author on book.author_id=author.author_id where author.first_name=?";
+			books=new ArrayList<Book>();
+			preparedStatement=connection.prepareStatement(sql);
+			resultSet=preparedStatement.executeQuery();
+			while(resultSet.next()){
+				Book book=new Book();
+	
+				book.setBookISBN(BigInteger.valueOf(resultSet.getLong("book_isbn")));
+				book.setBookName(resultSet.getString("book_name"));
+				book.setBookPrice(resultSet.getBigDecimal("book_price"));
+				book.setAuthorId(BigInteger.valueOf(resultSet.getLong("author_id")));
+				
+				books.add(book);
+			}
 		}catch (Exception e) {
 			// TODO: handle exception
+			logger.error("Error generated at updateByName method in BookDao: "+e.getMessage());
+		}finally {
+			if(preparedStatement!=null) {
+				try {
+					preparedStatement.close();
+				}catch (SQLException e) {
+					// TODO: handle exception
+					logger.error("Error generated at updateByName method in BookDao: "+e.getMessage());
+				}
+			}
 		}
-		return null;
+		return books;
+	}
+	
+	public List<String> viewBooksByAuthor(String bookName){
+		List<String> booksName=new ArrayList<String>();
+		String sql="select book.book_name from book join author on book.author_id=author.author_id where author_name=?";
+		try {
+			preparedStatement=connection.prepareStatement(sql);
+			preparedStatement.setString(1, bookName);
+			resultSet=preparedStatement.executeQuery();
+			
+			while(resultSet.next()) {
+				String book=resultSet.getString("book_name");
+				booksName.add(book);
+			}
+		}catch (Exception e) {
+			// TODO: handle exception
+			logger.error("Error generated at viewBooksByAuthor method in BookDao: "+e.getMessage());
+		}
+		finally {
+			if(preparedStatement!=null) {
+				try {
+					preparedStatement.close();
+				}catch (SQLException e) {
+					// TODO: handle exception
+					logger.error("Error generated at viewBooksByAuthor method in BookDao: "+e.getMessage());
+				}
+			}
+		}
+		return booksName;
 	}
 
 }

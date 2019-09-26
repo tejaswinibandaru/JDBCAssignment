@@ -14,5 +14,7 @@ public interface BookDao {
 	public Integer removeBook(BigInteger bookId) throws BookException;
 	public Book updateBook(BigInteger bookId) throws BookException;
 	public List<Book> searchBook(BigInteger bookId) throws BookException;
+	public List<String> viewBooksByAuthor(String bookName);
+	public List<Book> updateByName(String name) throws BookException;
 
 }
